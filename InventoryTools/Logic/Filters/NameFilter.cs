@@ -18,7 +18,7 @@ namespace InventoryTools.Logic.Filters
 
         private bool IsTextRegex(string x)
         { 
-            return x.StartsWith("/") && x.EndsWith("/");
+            return x.StartsWith('/') && x.EndsWith('/');
         }
 
         public override bool? FilterItem(FilterConfiguration configuration,InventoryItem item)
