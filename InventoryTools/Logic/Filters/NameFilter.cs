@@ -2,6 +2,9 @@ using CriticalCommonLib.Models;
 using CriticalCommonLib.Sheets;
 using InventoryTools.Extensions;
 using InventoryTools.Logic.Filters.Abstract;
+using Lumina.Excel.GeneratedSheets;
+using System;
+using System.Text.RegularExpressions;
 
 namespace InventoryTools.Logic.Filters
 {
@@ -13,6 +16,11 @@ namespace InventoryTools.Logic.Filters
         public override FilterType AvailableIn { get; set; }  = FilterType.SearchFilter | FilterType.SortingFilter | FilterType.GameItemFilter;
         public override FilterCategory FilterCategory { get; set; } = FilterCategory.Basic;
 
+        private bool IsTextRegex(string x)
+        { 
+            return x.StartsWith("/") && x.EndsWith("/");
+        }
+
         public override bool? FilterItem(FilterConfiguration configuration,InventoryItem item)
         {
             return FilterItem(configuration, item.Item);
@@ -23,13 +31,28 @@ namespace InventoryTools.Logic.Filters
             var currentValue = CurrentValue(configuration);
             if (!string.IsNullOrEmpty(currentValue))
             {
-                if (!item.NameString.ToString().ToLower().PassesFilter(currentValue.ToLower()))
+                if (IsTextRegex(currentValue))
                 {
-                    return false;
+                    currentValue = currentValue.Trim('/');
+                    if (!Regex.Match(item.NameString.ToString(), currentValue, RegexOptions.IgnoreCase).Success)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                } 
+                else 
+                { 
+
+                    if (!item.NameString.ToString().ToLower().PassesFilter(currentValue.ToLower()))
+                    {
+                        return false;
+                    }
                 }
             }
 
             return true;
         }
+    
     }
 }
