@@ -5,6 +5,7 @@ using InventoryTools.Logic.Filters.Abstract;
 using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Text.RegularExpressions;
+using Dalamud.Logging;
 
 namespace InventoryTools.Logic.Filters
 {
@@ -31,28 +32,33 @@ namespace InventoryTools.Logic.Filters
             var currentValue = CurrentValue(configuration);
             if (!string.IsNullOrEmpty(currentValue))
             {
-                if (IsTextRegex(currentValue))
+                try
                 {
-                    currentValue = currentValue.Trim('/');
-                    if (!Regex.Match(item.NameString.ToString(), currentValue, RegexOptions.IgnoreCase).Success)
+                    if (IsTextRegex(currentValue))
                     {
-                        return false;
+                        currentValue = currentValue.Trim('/');
+                        if (!Regex.Match(item.NameString.ToString(), currentValue, RegexOptions.IgnoreCase).Success)
+                        {
+                            return false;
+                        }
                     }
-
-                    return true;
-                } 
-                else 
-                { 
-
-                    if (!item.NameString.ToString().ToLower().PassesFilter(currentValue.ToLower()))
+                    else
                     {
-                        return false;
+
+                        if (!item.NameString.ToString().ToLower().PassesFilter(currentValue.ToLower()))
+                        {
+                            return false;
+                        }
                     }
+                }
+                catch (Exception e)
+                {
+                    PluginLog.Error(e, "Invalid Regex String");
+                    return false;
                 }
             }
 
             return true;
         }
-    
     }
 }
